@@ -1,5 +1,6 @@
 # ValidKit TypeScript SDK
 
+[![CI](https://github.com/ValidKit/validkit-typescript-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/ValidKit/validkit-typescript-sdk/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/%40validkit%2Fsdk.svg)](https://badge.fury.io/js/%40validkit%2Fsdk)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
