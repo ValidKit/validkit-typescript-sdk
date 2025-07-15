@@ -44,7 +44,7 @@ console.log(result.valid) // true/false
 // Batch verification with progress tracking
 const emails = ['email1@test.com', 'email2@test.com', /* ... up to 10K emails */]
 const results = await client.verifyBatch(emails, {
-  format: 'compact', // 80% smaller responses
+  format: 'compact', // 80% smaller responses (SDK transforms V1 API response)
   progress_callback: (processed, total) => {
     console.log(`Progress: ${processed}/${total}`)
   }
@@ -192,6 +192,8 @@ await client.verifyEmail(email: string, options?: {
 }
 ```
 
+> **Note:** The V1 API always returns full format responses. When compact format is requested, the SDK automatically transforms the response client-side to provide the expected compact format. The SDK also extracts the verification data from the API response wrapper for ease of use.
+
 ### Batch Email Verification
 
 ```typescript
@@ -310,7 +312,7 @@ const result: EmailVerificationResult = await client.verifyEmail(
 Comprehensive error handling with typed exceptions:
 
 ```typescript
-import { ValidKit, ValidationError, RateLimitError } from '@validkit/sdk';
+import { ValidKit, ValidationError, RateLimitError, BatchSizeError } from '@validkit/sdk';
 
 try {
   const result = await client.verifyEmail('invalid@email');
@@ -319,6 +321,8 @@ try {
     console.log(`Rate limited. Retry after ${error.retryAfter}s`);
   } else if (error instanceof ValidationError) {
     console.log(`Validation error: ${error.message}`);
+  } else if (error instanceof BatchSizeError) {
+    console.log(`Batch too large: ${error.message}`);
   }
 }
 ```
@@ -343,7 +347,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ```bash
 # Clone the repository
-git clone https://github.com/validkit/typescript-sdk.git
+git clone https://github.com/ValidKit/validkit-typescript-sdk.git
 cd typescript-sdk
 
 # Install dependencies
@@ -363,7 +367,7 @@ npm run dev
 
 - 📖 **Documentation**: https://docs.validkit.com
 - 🔧 **API Reference**: https://api.validkit.com/docs/openapi.json
-- 🐛 **Issues**: https://github.com/validkit/typescript-sdk/issues
+- 🐛 **Issues**: https://github.com/ValidKit/validkit-typescript-sdk/issues
 - 📧 **Email**: support@validkit.com
 - 💬 **Discord**: [Join our community](https://discord.gg/validkit)
 

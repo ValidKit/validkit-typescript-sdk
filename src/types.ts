@@ -1,6 +1,6 @@
 /**
  * ValidKit SDK Types - Optimized for AI Agents
- * 
+ *
  * Provides comprehensive TypeScript definitions for the ValidKit Email Verification API
  * Built for high-performance batch processing and AI agent workflows
  */
@@ -20,7 +20,7 @@ export enum ResponseFormat {
  */
 export enum VerificationStatus {
   VALID = 'valid',
-  INVALID = 'invalid', 
+  INVALID = 'invalid',
   UNKNOWN = 'unknown'
 }
 
@@ -89,18 +89,28 @@ export interface EmailVerificationResult {
   success: boolean
   email: string
   valid: boolean
-  
+
   // Detailed validation checks
   format?: FormatCheck
   disposable?: DisposableCheck
   mx?: MXCheck
   smtp?: SMTPCheck
-  
+
   // Performance and tracing metadata
   processing_time_ms?: number
   timestamp?: string
   trace_id?: string
   request_id?: string
+
+  // Cache and Signal Pool info
+  cached?: boolean
+  warning?: string
+  signal_pool?: {
+    contributed: boolean
+    reward_earned: boolean
+    reward_amount?: number
+    pool_size?: number
+  }
 }
 
 /**
@@ -110,10 +120,12 @@ export interface EmailVerificationResult {
 export interface CompactResult {
   /** Valid */
   v: boolean
-  /** Disposable (optional) */
+  /** Disposable (optional - only present if true) */
   d?: boolean
   /** Reason if invalid (only present when v=false) */
   r?: string
+  /** Optional trace ID */
+  trace_id?: string
 }
 
 /**
@@ -125,14 +137,14 @@ export interface BatchVerificationResult {
   valid: number
   invalid: number
   results: Record<string, EmailVerificationResult | CompactResult>
-  
+
   // Batch metadata
   batch_id?: string
   processing_time_ms?: number
   timestamp?: string
   trace_id?: string
   request_id?: string
-  
+
   // Rate limiting information
   rate_limit?: number
   rate_remaining?: number
@@ -149,21 +161,21 @@ export interface BatchJob {
   processed: number
   valid: number
   invalid: number
-  
+
   // Job management URLs
   status_url?: string
   results_url?: string
   cancel_url?: string
-  
+
   // Webhook configuration
   webhook_url?: string
   webhook_status?: string
-  
+
   // Timestamps
   created_at: string
   updated_at: string
   completed_at?: string
-  
+
   // Error handling
   error?: string
   failed_emails?: string[]
@@ -211,6 +223,8 @@ export interface VerifyEmailOptions {
   parent_id?: string
   /** Enable debug mode for detailed validation steps */
   debug?: boolean
+  /** Share validation results with Agent Signal Pool™ (Pro+ tiers only) */
+  share_signals?: boolean
 }
 
 /**
@@ -229,6 +243,8 @@ export interface VerifyBatchOptions {
   parent_id?: string
   /** Enable debug mode for detailed validation steps */
   debug?: boolean
+  /** Share validation results with Agent Signal Pool™ (Pro+ tiers only) */
+  share_signals?: boolean
 }
 
 /**
@@ -246,6 +262,71 @@ export interface VerifyBatchAsyncOptions {
 }
 
 /**
+ * Agent bulk verification compact result
+ */
+export interface AgentCompactResult {
+  /** Index in the input array */
+  i: number
+  /** Valid flag (1 = valid, 0 = invalid) */
+  v: 0 | 1
+  /** Disposable flag (1 = disposable, only present if true) */
+  d?: 0 | 1
+  /** Error code (only present if invalid) */
+  e?: 'syn' | 'mx' | 'disp' | 'err' | 'unk'
+}
+
+/**
+ * Agent bulk verification response (compact format)
+ */
+export interface AgentBulkCompactResponse {
+  /** Request ID */
+  id: string
+  /** Trace ID */
+  tid: string
+  /** Array of results */
+  results: AgentCompactResult[]
+  /** Statistics */
+  stats: {
+    /** Total emails */
+    t: number
+    /** Valid count */
+    v: number
+    /** Processing time in milliseconds */
+    ms: number
+    /** Emails per second */
+    eps: number
+  }
+}
+
+/**
+ * Agent bulk verification response (verbose format)
+ */
+export interface AgentBulkVerboseResponse {
+  success: boolean
+  request_id: string
+  trace_id: string
+  total: number
+  valid: number
+  invalid: number
+  processing_time_ms: number
+  emails_per_second: number
+  results: Array<{
+    index: number
+    email: string
+    valid: boolean
+    disposable: boolean
+    reason?: string
+  }>
+  error_summary?: {
+    syn?: number
+    mx?: number
+    disp?: number
+    err?: number
+    unk?: number
+  }
+}
+
+/**
  * Progress callback function type for batch processing
  */
 export type ProgressCallback = (processed: number, total: number) => void
@@ -256,7 +337,19 @@ export type ProgressCallback = (processed: number, total: number) => void
 export interface ValidKitErrorDetails {
   code: string
   message: string
-  details?: Record<string, any>
+  statusCode?: number
+  details?: Record<string, unknown>
+  retry_after?: number
+  limit?: number
+  reset?: number
+  upgrade_url?: string
+  help_url?: string
+  support?: string
+  feature?: string
+  current_plan?: string
+  required_plan?: string
+  used?: number
+  resets_at?: string
 }
 
 /**

@@ -1,47 +1,33 @@
 # Dependencies
 node_modules/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Build output
 dist/
-lib/
-*.tgz
+*.tsbuildinfo
 
-# Environment files
-.env
-.env.*
-!.env.example
+# Testing
+coverage/
+*.log
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
+# IDE files
 .idea/
+.vscode/
 *.swp
 *.swo
 
-# Coverage
-coverage/
-.nyc_output/
-
-# Private keys or credentials
-*.pem
-*.key
-*.cert
-*credentials*
-*secrets*
-*.private
-
-# Test artifacts
-*.test.js
-*.spec.js
+# Environment files
+.env
+.env.local
+.env.*.local
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+
+# Release-specific files
+RELEASE_INSTRUCTIONS.md

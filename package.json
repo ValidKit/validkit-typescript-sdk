@@ -1,6 +1,6 @@
 {
   "name": "@validkit/sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official TypeScript/JavaScript SDK for ValidKit Email Verification API - optimized for AI agents",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -18,14 +18,14 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build:sdk": "tsup",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
-    "test": "echo \"No tests yet\"",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "test": "echo 'Tests are in the external SDK repository' && exit 0",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build:sdk",
     "publish:npm": "npm publish --access public"
   },
   "keywords": [
@@ -46,10 +46,10 @@
   "homepage": "https://validkit.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/validkit/typescript-sdk.git"
+    "url": "git+https://github.com/ValidKit/validkit-typescript-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/validkit/typescript-sdk/issues"
+    "url": "https://github.com/validkit/validkit/issues"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

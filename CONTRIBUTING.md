@@ -2,40 +2,6 @@
 
 Thank you for your interest in contributing to ValidKit! We welcome contributions from the community.
 
-## Commit Message Convention
-
-We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for clear and consistent commit history.
-
-### Format
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Types
-- `feat`: New feature
-- `fix`: Bug fix  
-- `docs`: Documentation only changes
-- `style`: Code style changes (formatting, missing semicolons, etc)
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `perf`: Performance improvements
-- `test`: Adding missing tests or correcting existing tests
-- `build`: Changes that affect the build system or external dependencies
-- `ci`: Changes to CI configuration files and scripts
-- `chore`: Other changes that don't modify src or test files
-
-### Examples
-```
-feat: add support for custom timeout configuration
-
-fix: handle network errors gracefully in batch processing
-
-docs: improve TypeScript examples in README
-```
-
 ## Code of Conduct
 
 By participating in this project, you agree to abide by our Code of Conduct:
@@ -48,7 +14,7 @@ By participating in this project, you agree to abide by our Code of Conduct:
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Issues](https://github.com/validkit/typescript-sdk/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/ValidKit/validkit-typescript-sdk/issues)
 2. If not, create a new issue with:
    - Clear title and description
    - Steps to reproduce
@@ -64,90 +30,23 @@ By participating in this project, you agree to abide by our Code of Conduct:
    - Proposed API design
    - Benefits to users
 
-### Pull Request Guidelines
+### Pull Requests
 
-#### Before Creating a PR
-
-1. Fork the repository and clone locally
-2. Create a feature branch from `main`:
-   ```bash
-   git checkout -b feat/your-feature-name
-   # or
-   git checkout -b fix/your-bug-fix
-   ```
-
-3. Make your changes following TypeScript best practices
-4. Write/update tests to maintain coverage
-5. Run all checks:
-   ```bash
-   npm run typecheck
-   npm run lint
-   npm test
-   npm run build
-   ```
-
-#### Commit Your Changes
-
-Follow our commit convention:
-```bash
-# Single line commit
-git commit -m "feat: add retry configuration options"
-
-# Multi-line commit with details
-git commit -m "feat: add custom headers support" -m "- Allow setting custom headers via options
-- Add X-Trace-ID header for request tracking
-- Update TypeScript definitions
-- Add examples to documentation"
-```
-
-#### PR Title and Description
-
-Your PR title should follow the same convention as commits:
-- `feat: add WebSocket support for real-time validation`
-- `fix: handle network timeouts gracefully`
-- `docs: improve TypeScript examples`
-- `perf: optimize batch processing memory usage`
-
-In your PR description, include:
-
-```markdown
-## What
-Brief description of what this PR does
-
-## Why
-The problem it solves or feature it adds
-Closes #[issue number]
-
-## How
-- Technical approach taken
-- Any design decisions made
-- Breaking changes (if any)
-
-## Testing
-- Unit tests added/updated
-- Manual testing performed
-- Performance impact (if relevant)
-
-## Checklist
-- [ ] Tests pass locally
-- [ ] TypeScript types are correct
-- [ ] Documentation updated
-- [ ] No breaking changes (or documented)
-```
-
-#### After Creating Your PR
-
-1. Ensure all GitHub Actions checks pass
-2. Respond to code review feedback promptly
-3. Keep your branch up to date with `main`
-4. Be prepared to make changes based on feedback
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Add/update tests
+5. Update documentation
+6. Commit with clear messages (`git commit -m 'feat: add amazing feature'`)
+7. Push to your fork (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
 ### Development Setup
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/typescript-sdk.git
-cd typescript-sdk
+git clone https://github.com/YOUR_USERNAME/validkit-typescript-sdk.git
+cd validkit-typescript-sdk
 
 # Install dependencies
 npm install
