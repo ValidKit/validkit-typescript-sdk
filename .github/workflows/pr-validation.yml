@@ -1,0 +1,71 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check formatting
+      run: npm run lint
+
+    - name: Type check
+      run: npm run typecheck
+
+    - name: Build
+      run: npm run build
+
+    - name: Test
+      run: npm run test:coverage
+
+    - name: Check test coverage
+      run: |
+        COVERAGE=$(npm run test:coverage -- --json --silent | jq '.coverageMap | to_entries | map(.value.branches.pct) | add / length')
+        echo "Branch coverage: $COVERAGE%"
+        if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+          echo "❌ Branch coverage is below 80%"
+          exit 1
+        else
+          echo "✅ Branch coverage meets threshold"
+        fi
+
+    - name: Check bundle size
+      run: |
+        npm run build
+        BUNDLE_SIZE=$(find dist -name "*.js" -type f -exec du -b {} + | awk '{sum+=$1} END {print sum}')
+        MAX_SIZE=100000  # 100KB
+        echo "Bundle size: $BUNDLE_SIZE bytes"
+        if [ $BUNDLE_SIZE -gt $MAX_SIZE ]; then
+          echo "❌ Bundle size exceeds 100KB limit"
+          exit 1
+        else
+          echo "✅ Bundle size is within limits"
+        fi
+
+    - name: Validate package.json
+      run: |
+        # Check required fields
+        node -e "
+          const pkg = require('./package.json');
+          const required = ['name', 'version', 'description', 'main', 'types', 'license'];
+          const missing = required.filter(field => !pkg[field]);
+          if (missing.length > 0) {
+            console.error('❌ Missing required fields in package.json:', missing.join(', '));
+            process.exit(1);
+          }
+          console.log('✅ All required fields present in package.json');
+        "
