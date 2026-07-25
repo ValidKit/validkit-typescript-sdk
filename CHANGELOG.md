@@ -5,6 +5,15 @@ All notable changes to the ValidKit TypeScript SDK will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-30
+
+### Added
+- `on_error` config posture for `verifyEmail`: `'throw'` (default, unchanged), `'fail-open'`, or `'local-fallback'`. When the API is unreachable after retries (ConnectionError, TimeoutError, or a retryable 5xx ServerError), `'local-fallback'` degrades to a local check instead of blocking or blindly accepting.
+- Optional `node-email-verifier` peer dependency enables Tier 1 local MX and disposable checks. It is never installed by default and adds zero runtime weight unless you opt in with `npm i node-email-verifier` (Node 20+).
+- Degraded verdicts are clearly labeled: `degraded: true`, `source: 'local-fallback' | 'fail-open'`, `checks_run`, and a capped `confidence`. New `isDegraded()` type guard and `DegradedVerificationResult` type.
+- Every full-format `verifyEmail` verdict now carries `degraded` and `source`, so consumers never branch on field absence.
+- `local_fallback_mx_timeout` config (default 2000 ms) bounds the Tier 1 check.
+
 ## [1.0.1] - 2025-01-15
 
 ### Fixed
@@ -44,5 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Webhook support for async processing
 - Cross-platform compatibility (Node.js and browsers)
 
+[1.1.0]: https://github.com/ValidKit/validkit-typescript-sdk/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/ValidKit/validkit-typescript-sdk/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ValidKit/validkit-typescript-sdk/releases/tag/v1.0.0

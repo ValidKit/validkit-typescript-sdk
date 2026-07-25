@@ -7,12 +7,33 @@
 import { ValidKitErrorDetails, RateLimitInfo } from './types';
 
 /**
+ * Merge upstream proxy metadata (#3496) into error details so consumers can
+ * read the real API error code (`UPSTREAM_TIMEOUT` / `UPSTREAM_ERROR`) via
+ * `details.upstream_code`, and `retry_after` (which also powers
+ * `getRetryDelay()`), while the wrapper class keeps its legacy `code` for
+ * backward compatibility.
+ */
+function withUpstreamMetadata(errorData?: ValidKitErrorDetails): Record<string, unknown> | undefined {
+  if (!errorData) {
+    return undefined;
+  }
+  const details: Record<string, unknown> = { ...(errorData.details ?? {}) };
+  if (errorData.code) {
+    details.upstream_code = errorData.code;
+  }
+  if (errorData.retry_after !== undefined) {
+    details.retry_after = errorData.retry_after;
+  }
+  return Object.keys(details).length > 0 ? details : undefined;
+}
+
+/**
  * Base error class for all ValidKit SDK errors
  */
 export class ValidKitError extends Error {
   public readonly code: string;
   public readonly statusCode?: number;
-  public readonly details?: Record<string, unknown>;
+  public details?: Record<string, unknown>;
 
   constructor(message: string, statusCode?: number, details?: Record<string, unknown>, code: string = 'VALIDKIT_ERROR') {
     super(message);
@@ -45,18 +66,19 @@ export class ValidKitError extends Error {
         return new ValidationError(message || response.statusText || 'Validation failed', errorData?.details);
       case 408:
       case 504:
-        return new TimeoutError(message || 'Request timed out', errorData?.details);
+        return new TimeoutError(message || 'Request timed out', withUpstreamMetadata(errorData), response.status);
       case 500:
       case 502:
-        return new ServerError(message || 'Internal server error', errorData?.details);
+        return new ServerError(message || 'Internal server error', withUpstreamMetadata(errorData), response.status);
       case 503:
-        return new ServerError(message || 'Service temporarily unavailable', errorData?.details);
+        return new ServerError(message || 'Service temporarily unavailable', withUpstreamMetadata(errorData), response.status);
       default: {
-        const error = new ValidKitError(message || response.statusText || `API request failed with status ${response.status}`, response.status, errorData?.details);
-        if (errorData?.code) {
-          (error as any).code = errorData.code;
-        }
-        return error;
+        return new ValidKitError(
+          message || response.statusText || `API request failed with status ${response.status}`,
+          response.status,
+          errorData?.details,
+          errorData?.code || 'VALIDKIT_ERROR'
+        );
       }
     }
   }
@@ -137,8 +159,11 @@ export class BatchSizeError extends ValidKitError {
  * Request timeout error
  */
 export class TimeoutError extends ValidKitError {
-  constructor(message: string = 'Request timed out', details?: Record<string, unknown>) {
-    super(message, 408, details, 'TIMEOUT');
+  // statusCode is configurable (#3496): proxy-emitted upstream timeouts are
+  // HTTP 504 on the wire — consumers branching on error.statusCode must see
+  // the real status, not a hard-coded 408. Default preserves legacy behavior.
+  constructor(message: string = 'Request timed out', details?: Record<string, unknown>, statusCode: number = 408) {
+    super(message, statusCode, details, 'TIMEOUT');
     this.name = 'TimeoutError';
   }
 }
@@ -157,8 +182,10 @@ export class ConnectionError extends ValidKitError {
  * Server error (5xx responses)
  */
 export class ServerError extends ValidKitError {
-  constructor(message: string = 'Server error occurred', details?: Record<string, unknown>) {
-    super(message, 500, details, 'SERVER_ERROR');
+  // statusCode is configurable (#3496): 502/503 must surface their real wire
+  // status to error.statusCode consumers. Default preserves legacy behavior.
+  constructor(message: string = 'Server error occurred', details?: Record<string, unknown>, statusCode: number = 500) {
+    super(message, statusCode, details, 'SERVER_ERROR');
     this.name = 'ServerError';
   }
 }
@@ -180,5 +207,24 @@ export class BatchJobError extends ValidKitError {
   constructor(message: string = 'Batch job failed', details?: Record<string, unknown>) {
     super(message, 500, details, 'BATCH_JOB_ERROR');
     this.name = 'BatchJobError';
+  }
+}
+
+/**
+ * Request aborted via a caller-supplied AbortSignal. Deliberately does NOT extend
+ * ConnectionError / TimeoutError / ServerError — those are handleVerifyError's fail-open /
+ * local-fallback trigger set, and an explicit caller cancellation must always propagate,
+ * never silently degrade into a fallback verdict.
+ *
+ * `sleep()` and `makeRequest()` never let a native fetch/DOMException AbortError leak to
+ * callers — every abort path (mid-flight fetch, retry backoff, already-aborted) converts to
+ * this class. Its `.name` is still `'AbortError'` for familiarity with the platform
+ * AbortController idiom, but since a native DOMException shares that same `.name`,
+ * discriminate with `instanceof AbortError` or `error.code === 'ABORTED'` — not `.name`.
+ */
+export class AbortError extends ValidKitError {
+  constructor(message: string = 'Request aborted', details?: Record<string, unknown>) {
+    super(message, undefined, details, 'ABORTED');
+    this.name = 'AbortError';
   }
 }

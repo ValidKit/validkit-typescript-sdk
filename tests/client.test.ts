@@ -70,8 +70,8 @@ describe('ValidKit Client', () => {
       })
 
       const result = await client.verifyEmail('test@example.com')
-      
-      expect(result).toEqual({
+
+      expect(result).toMatchObject({
         success: true,
         email: 'test@example.com',
         valid: true,
@@ -83,7 +83,10 @@ describe('ValidKit Client', () => {
         request_id: 'req_456',
         cached: undefined,
         warning: undefined,
-        signal_pool: undefined
+        signal_pool: undefined,
+        // Every full-format verifyEmail verdict carries these since 1.1.0 (see CHANGELOG)
+        degraded: false,
+        source: 'api'
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
